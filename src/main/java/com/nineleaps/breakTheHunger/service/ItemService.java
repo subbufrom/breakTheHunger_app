@@ -31,6 +31,10 @@ public class ItemService {
 
             ItemEntity itemEntity = formItemEntity(itemRequestDto);
 
+            String userId = itemRequestDto.getUserId();
+
+            UserEntity user = userRepository.findOne(userId);
+
             ItemEntity item = itemRepository.save(itemEntity);
 
             if (item != null)
@@ -91,5 +95,12 @@ public class ItemService {
             itemuser.setAddress(user.getAddress());
             itemuser.setMobileNo(user.getMobileNo());
             return itemuser;
+        }
+
+        public List<ItemEntity> getGeoData(Double lat,Double lang) {
+
+        List<UserEntity> userEntities = elasticSearchOperation.getAllGeoDetails(lat,lang);
+
+        return null;
         }
     }

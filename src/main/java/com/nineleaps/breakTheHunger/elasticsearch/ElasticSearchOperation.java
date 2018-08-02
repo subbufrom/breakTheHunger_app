@@ -4,12 +4,15 @@ package com.nineleaps.breakTheHunger.elasticsearch;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nineleaps.breakTheHunger.entities.ImageEntity;
 import com.nineleaps.breakTheHunger.entities.ItemEntity;
+import com.nineleaps.breakTheHunger.entities.UserEntity;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.GeoDistanceQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -106,6 +109,51 @@ public class ElasticSearchOperation {
     private SearchRequestBuilder createSearchBuilderForItemEntity(Client client) {
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch("item_details")
                 .setTypes("item").setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+        return searchRequestBuilder;
+    }
+
+    public List<UserEntity> getAllGeoDetails(Double lat, Double lang) {
+        List<UserEntity> userEntities = new ArrayList<>();
+
+        SearchRequestBuilder builder = createSearchBuilderForUserEntity(client);
+
+        try {
+
+
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            QueryBuilder queryBuilder = QueryBuilders.geoDistanceQuery("geoLocation").point(44.22,23.22).distance(1, DistanceUnit.KILOMETERS);
+            boolQueryBuilder.filter(queryBuilder);
+
+            SearchResponse searchResponse = builder.setQuery(boolQueryBuilder).execute().actionGet();
+
+            if (searchResponse.status().getStatus() == 200) {
+
+                try {
+                    while (true) {
+                        for (SearchHit hit : searchResponse.getHits().getHits()) {
+
+                            String items = hit.getSourceAsString();
+                            UserEntity userEntity =
+                                    mapper.readValue(items, UserEntity.class);
+                            userEntities.add(userEntity);
+                        }
+                        break;
+
+                    }
+                } catch (Exception e) {
+                    System.out.println("cannot fetch from db");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("cannot fetch from db");
+        }
+        return userEntities;
+
+    }
+
+    private SearchRequestBuilder createSearchBuilderForUserEntity(Client client) {
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch("user_details")
+                .setTypes("user").setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
         return searchRequestBuilder;
     }
 

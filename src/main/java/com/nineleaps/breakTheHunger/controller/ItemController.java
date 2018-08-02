@@ -53,4 +53,13 @@ public class ItemController {
         return itemService.getOneItemWithUserDetail(id);
     }
 
+    @RequestMapping(value = "/item/buyerGeo/get/{id}",method = RequestMethod.GET)
+    @ApiOperation(value = "Get one item", nickname = "getOne item")
+    public ResponseEntity getGeoDetails(@RequestParam Double lat, @RequestParam Double lang) {
+
+        itemService.getGeoData(lat,lang);
+        return null;
+
+    }
+
 }

@@ -1,0 +1,6 @@
+version: '3'
+services:
+        api:
+                build: ./breah-the-hunger-application
+                ports:
+                        - "5000:8100"
